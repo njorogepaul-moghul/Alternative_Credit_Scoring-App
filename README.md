@@ -1,4 +1,6 @@
 # 🛡️ Alternative Credit Scoring Engine
+***[😊 TRY Alternative Credit Scoring app here:](https://alternativecreditscoring-app-gojkhneajqbfpnshgxsyv3.streamlit.app/)***
+
 
 Predict financial risk using behavioral and demographic data from the 2021 FinAccess Household Survey (KNBS). Built with Streamlit and XGBoost.
 
