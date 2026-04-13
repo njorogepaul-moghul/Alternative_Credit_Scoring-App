@@ -1,90 +1,139 @@
-# 🛡️ Alternative Credit Scoring Engine
-***[😊 TRY Alternative Credit Scoring app here:](https://alternativecreditscoring-app-gojkhneajqbfpnshgxsyv3.streamlit.app/)***
+# 🛡️ Alternative Credit Scoring Engine — Streamlit App
+### Interactive Deployment of an XGBoost Credit Risk Model for Kenya's Informal Economy
 
-
-Predict financial risk using behavioral and demographic data from the 2021 FinAccess Household Survey (KNBS). Built with Streamlit and XGBoost.
-
----
-
-## Features
-
-- User-friendly Streamlit interface with two input columns:
-  - **Demographics:** Age, Gender, Education Level  
-  - **Financial Behavior:** Monthly Income, Income Group, Mobile Money/Bank usage, Chama participation  
-- Predicts **High vs Low Financial Risk** with probability  
-- **Feature contribution bar chart** shows approximate impact of each input on prediction  
-- Adjustable **risk threshold** (default: 0.4)  
-- Survey flags included (B3A__2: Employment Income, B3A__3: Casual Work Income)  
+[![Live App](https://img.shields.io/badge/🚀_Live_App-Streamlit-FF4B4B)](https://alternativecreditscoring-app-gojkhneajqbfpnshgxsyv3.streamlit.app/)
+![Python](https://img.shields.io/badge/Python-3.10+-blue)
+![XGBoost](https://img.shields.io/badge/Model-XGBoost-orange)
+![Data](https://img.shields.io/badge/Data-KNBS_FinAccess_2021-green)
 
 ---
 
-## Installation
+## 📌 Overview
 
-1. Clone the repository:
+This is the **deployed application** for the Alternative Credit Scoring System — an end-to-end machine learning project that predicts household loan default risk using **behavioral and demographic data** from Kenya's 2021 FinAccess Household Survey (KNBS/CBK).
+
+The app makes the underlying XGBoost model accessible to anyone — no technical knowledge required. A user inputs demographic and financial behavior data and instantly receives a **High Risk / Low Risk prediction** with a probability score and feature contribution breakdown.
+
+**Underlying model:** Tuned XGBoost · ROC-AUC: 0.6681 · High-Risk Recall: 68%
+
+---
+
+## 🚀 Live Demo
+
+👉 [**Try the App Here**](https://alternativecreditscoring-app-gojkhneajqbfpnshgxsyv3.streamlit.app/)
+
+---
+
+## 🎯 What Makes This App Different
+
+Most credit scoring apps assume bank statements and formal income records. This one doesn't. It scores individuals using **alternative data signals** specifically validated for Kenya's informal economy:
+
+| Signal Type | Features Used |
+|---|---|
+| Demographics | Age, Gender, Education Level |
+| Financial Behavior | Monthly Income (KES), Income Group (auto-derived) |
+| Digital Footprint | Mobile Money usage, Mobile Banking usage |
+| Social Capital | Chama (Informal Group) membership |
+| Employment Type | Formal Salary vs Casual/Informal Work |
+
+---
+
+## ⚙️ How It Works
+
+### 1. Input Collection
+Two-column layout separates **Demographics** from **Financial Behavior** for a clean UX:
+- Dropdowns and checkboxes for categorical inputs
+- Number inputs for age and income (KES)
+- Income group (1–10) is **auto-derived** from raw income — user never sees the encoding
+
+### 2. Preprocessing Pipeline
+The app replicates the exact training pipeline:
+```python
+# Income log-transformation (matches training)
+b3i_log = np.log1p(income)
+
+# One-hot encoding of education, income group, usage patterns
+# Feature order locked to training order (26 features)
+# StandardScaler applied before prediction
+scaled_features = scaler.transform(features_df)
+```
+
+### 3. Prediction & Threshold
+```python
+probability = model.predict_proba(scaled_features)[0][1]
+threshold = 0.4  # Tuned for higher recall on high-risk class
+
+if probability >= threshold:
+    → High Risk (probability displayed as %)
+else:
+    → Low Risk (probability displayed as %)
+```
+
+> The 0.4 threshold (vs standard 0.5) is deliberate — in credit risk, catching more defaulters (higher recall) is prioritised over minimising false positives.
+
+### 4. Feature Contribution Chart
+After each prediction, an **approximate feature contribution bar chart** is rendered showing which inputs drove the risk score — making the model's decision interpretable to non-technical users.
+
+---
+
+## 🛠️ Tech Stack
+
+```
+Python · XGBoost · Streamlit · Pandas · NumPy · Joblib · Matplotlib · SHAP
+```
+
+---
+
+## 🖥️ Run Locally
 
 ```bash
-git clone https://github.com/yourusername/your-repo.git
-cd your-repo
-
-Create a virtual environment:
-
-python -m venv venv
-# Activate:
-# Windows
-source venv/Scripts/activate
-# macOS/Linux
-source venv/bin/activate
-
-Install dependencies:
-
+git clone https://github.com/njorogepaul-moghul/Alternative_Credit_Scoring-App.git
+cd Alternative_Credit_Scoring-App
 pip install -r requirements.txt
-Usage
 streamlit run Alternative_app.py
+```
 
-Input your data in the provided fields.
+---
 
-Click Predict Risk.
+## 📁 Repository Structure
 
-View the risk probability and feature contribution chart.
+```
+├── Alternative_app.py        # Streamlit app — UI, preprocessing, prediction
+├── xgb_credit_model.joblib   # Trained XGBoost model
+├── scaler.joblib             # StandardScaler — required for input preprocessing
+├── requirements.txt          # Dependencies
+└── README.md                 # This file
+```
 
-Model Information
+---
 
-Model: XGBoost Classifier (xgb_credit_model.joblib)
+## ⚠️ Important Note on scaler.joblib
 
-Scaler: StandardScaler (scaler.joblib)
+The `scaler.joblib` file **must be present** in the same directory as `Alternative_app.py` for the app to run. It applies the same StandardScaler fitted during training — without it, predictions will be incorrect.
 
-Features: 26 input features including demographics, financial behavior, and usage patterns
+---
 
-Threshold: 0.4 probability for high risk
+## 🔗 Related Repository
 
-Notes
+Full model training pipeline, EDA, and phase-by-phase documentation:
+👉 [Alternative Credit Scoring System — Full Project](https://github.com/njorogepaul-moghul/Alternative-credit-scoring)
 
-Ensure venv/ is ignored in Git (included in .gitignore)
+---
 
-The feature contribution chart uses approximate feature importance for Streamlit compatibility (SHAP optional)
+## 📊 Model Performance (Underlying XGBoost)
 
-App tested with Python 3.12 and Streamlit >=1.25
+| Metric | Value |
+|---|---|
+| ROC-AUC | 0.6681 |
+| High-Risk Recall | 0.68 |
+| Low-Risk Precision | 0.77 |
+| Overall Accuracy | 0.61 |
+| Risk Threshold | 0.40 |
 
-Requirements
+---
 
-Python 3.12+
+## 📬 Contact
 
-streamlit
+**Paul Njoroge** | larneymogul@gmail.com | Kenyatta University, Kenya
 
-pandas
-
-numpy
-
-joblib
-
-matplotlib
-
-xgboost
-
-(Optional for SHAP visualizations: shap, ipython)
-
-Contact
-
-Paul Njoroge
-
-Email: larneymogul@gmail.com
+> Data source: 2021 FinAccess Household Survey — Kenya National Bureau of Statistics (KNBS) & Central Bank of Kenya (CBK)
